@@ -1,0 +1,20 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="GPL-3.0-or-later"
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+description='''Makes Bumblezone the acquisition origin for cultivatable food flora while preserving portable Overworld farming.'''
+[[dependencies.${mod_id}]]
+modId="forge"
+mandatory=true
+versionRange="[${forge_version},)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.${mod_id}]]
+modId="the_bumblezone"
+mandatory=true
+versionRange="[7.13.4,7.14)"
+ordering="AFTER"
+side="BOTH"
