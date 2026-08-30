@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,6 +32,34 @@ class CultivarCatalogContractTest {
                 assertFalse(cultivar.getAsJsonArray("plantBlocks").isEmpty());
                 assertFalse(cultivar.getAsJsonArray("originDimensions").isEmpty());
             }
+        }
+    }
+
+    @Test void publishedTagsCoverTheCompleteCatalog() throws Exception {
+        JsonArray entries;
+        try (var stream = getClass().getClassLoader().getResourceAsStream("defaults/cultivars.json")) {
+            assertNotNull(stream);
+            entries = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonArray();
+        }
+        Set<String> expectedSeeds = new HashSet<>();
+        Set<String> expectedPlants = new HashSet<>();
+        for (var element : entries) {
+            var cultivar = element.getAsJsonObject();
+            expectedSeeds.add(cultivar.get("seedItem").getAsString());
+            cultivar.getAsJsonArray("plantBlocks").forEach(plant -> expectedPlants.add(plant.getAsString()));
+        }
+        assertEquals(expectedSeeds, tagValues("data/bumblezone_cultivars/tags/items/seeds.json"));
+        assertEquals(expectedPlants, tagValues("data/bumblezone_cultivars/tags/blocks/origin/bumblezone.json"));
+    }
+
+    private Set<String> tagValues(String path) throws Exception {
+        try (var stream = getClass().getClassLoader().getResourceAsStream(path)) {
+            assertNotNull(stream, path);
+            var values = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8))
+                .getAsJsonObject().getAsJsonArray("values");
+            Set<String> result = new HashSet<>();
+            values.forEach(value -> result.add(value.getAsString()));
+            return result;
         }
     }
 }
