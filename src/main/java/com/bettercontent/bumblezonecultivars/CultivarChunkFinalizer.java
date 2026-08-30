@@ -1,11 +1,13 @@
 package com.bettercontent.bumblezonecultivars;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -20,27 +22,35 @@ public final class CultivarChunkFinalizer {
     @SubscribeEvent
     public static void onChunkLoad(ChunkEvent.Load event) {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) return;
-        // Fresh worlds only: inhabited chunks are never rewritten or backfilled.
-        if (chunk.getInhabitedTime() != 0L) return;
+        // This is worldgen finalization, never a scan or backfill of an ordinary loaded chunk.
+        if (!event.isNewChunk()) return;
         CultivarFinalizationData finalized = CultivarFinalizationData.get(level);
         long chunkKey = chunk.getPos().toLong();
         if (finalized.contains(chunkKey)) return;
         ResourceLocation dimension = level.dimension().location();
-        removeForeignNaturalCultivars(chunk, dimension, level.getMinBuildHeight(), level.getMaxBuildHeight());
+        removeForeignNaturalCultivars(chunk, dimension);
         if (dimension.equals(BUMBLEZONE)) {
             placeNurseries(chunk, level.random, level.getMinBuildHeight(), level.getMaxBuildHeight());
         }
         finalized.add(chunkKey);
     }
 
-    private static void removeForeignNaturalCultivars(LevelChunk chunk, ResourceLocation dimension, int minBuildHeight, int maxBuildHeight) {
+    private static void removeForeignNaturalCultivars(LevelChunk chunk, ResourceLocation dimension) {
         int minX = chunk.getPos().getMinBlockX(), minZ = chunk.getPos().getMinBlockZ();
-        for (int x = minX; x <= minX + 15; x++) for (int z = minZ; z <= minZ + 15; z++) for (int y = minBuildHeight; y < maxBuildHeight; y++) {
-            BlockPos pos = new BlockPos(x, y, z);
-            ResourceLocation id = ForgeRegistries.BLOCKS.getKey(chunk.getBlockState(pos).getBlock());
-            CultivarDefinition cultivar = id == null ? null : CultivarCatalog.byPlant(id.toString());
-            if (cultivar != null && !cultivar.originDimensions().contains(dimension.toString())) {
-                chunk.setBlockState(pos, Blocks.AIR.defaultBlockState(), false);
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        LevelChunkSection[] sections = chunk.getSections();
+        for (int sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+            LevelChunkSection section = sections[sectionIndex];
+            if (section == null || section.hasOnlyAir()) continue;
+            int baseY = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(sectionIndex));
+            for (int localY = 0; localY < 16; localY++) for (int localZ = 0; localZ < 16; localZ++) for (int localX = 0; localX < 16; localX++) {
+                var block = section.getBlockState(localX, localY, localZ).getBlock();
+                if (block == Blocks.AIR) continue;
+                CultivarDefinition cultivar = CultivarCatalog.byPlant(block);
+                if (cultivar != null && !cultivar.originDimensions().contains(dimension.toString())) {
+                    cursor.set(minX + localX, baseY + localY, minZ + localZ);
+                    chunk.setBlockState(cursor, Blocks.AIR.defaultBlockState(), false);
+                }
             }
         }
     }

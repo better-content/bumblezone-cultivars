@@ -12,6 +12,12 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CultivarCatalogContractTest {
+    @Test void indexedLookupsResolveCatalogEntries() {
+        assertEquals("wheat", CultivarCatalog.bySeed("minecraft:wheat_seeds").id());
+        assertEquals("wheat", CultivarCatalog.byPlant("minecraft:wheat").id());
+        assertNull(CultivarCatalog.byPlant("minecraft:stone"));
+    }
+
     @Test void everyCultivarHasThePublicContractAndDistinctPropagule() throws Exception {
         try (var stream = getClass().getClassLoader().getResourceAsStream("defaults/cultivars.json")) {
             assertNotNull(stream);
