@@ -7,6 +7,8 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -70,7 +72,7 @@ public final class BumblezoneCultivars {
     public BumblezoneCultivars() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         ITEMS.register(bus); BLOCKS.register(bus); BLOCK_ENTITIES.register(bus); LOOT_MODIFIERS.register(bus);
-        bus.addListener(CultivarClient::registerRenderers);
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> bus.addListener(CultivarClient::registerRenderers));
         MinecraftForge.EVENT_BUS.register(CultivarChunkFinalizer.class);
         MinecraftForge.EVENT_BUS.register(EdiblePlantingBlocker.class);
     }

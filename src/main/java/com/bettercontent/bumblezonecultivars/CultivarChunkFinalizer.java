@@ -21,9 +21,13 @@ public final class CultivarChunkFinalizer {
         if (!(event.getLevel() instanceof ServerLevel level) || !(event.getChunk() instanceof LevelChunk chunk)) return;
         // Fresh worlds only: inhabited chunks are never rewritten or backfilled.
         if (chunk.getInhabitedTime() != 0L) return;
+        CultivarFinalizationData finalized = CultivarFinalizationData.get(level);
+        long chunkKey = chunk.getPos().toLong();
+        if (finalized.contains(chunkKey)) return;
         ResourceLocation dimension = level.dimension().location();
         removeForeignNaturalCultivars(level, chunk, dimension);
         if (dimension.equals(BUMBLEZONE)) placeNurseries(level, chunk);
+        finalized.add(chunkKey);
     }
 
     private static void removeForeignNaturalCultivars(ServerLevel level, LevelChunk chunk, ResourceLocation dimension) {
