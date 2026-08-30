@@ -75,5 +75,6 @@ public final class BumblezoneCultivars {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> bus.addListener(CultivarClient::registerRenderers));
         MinecraftForge.EVENT_BUS.register(CultivarChunkFinalizer.class);
         MinecraftForge.EVENT_BUS.register(EdiblePlantingBlocker.class);
+        MinecraftForge.EVENT_BUS.register(SeedTradeBlocker.class);
     }
 }

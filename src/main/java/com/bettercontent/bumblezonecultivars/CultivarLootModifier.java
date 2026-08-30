@@ -22,15 +22,22 @@ public final class CultivarLootModifier extends LootModifier {
 
     @Override protected @NotNull ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> loot, LootContext context) {
         BlockState state = context.getParamOrNull(LootContextParams.BLOCK_STATE);
-        if (state == null) return loot;
-        ResourceLocation plantId = ForgeRegistries.BLOCKS.getKey(state.getBlock());
+        ResourceLocation dimension = context.getLevel().dimension().location();
+        ResourceLocation plantId = state == null ? null : ForgeRegistries.BLOCKS.getKey(state.getBlock());
         CultivarDefinition cultivar = plantId == null ? null : CultivarCatalog.byPlant(plantId.toString());
-        if (cultivar == null) return loot;
+        if (cultivar == null) {
+            loot.removeIf(stack -> {
+                ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+                CultivarDefinition seed = itemId == null ? null : CultivarCatalog.bySeed(itemId.toString());
+                return seed != null && !seed.originDimensions().contains(dimension.toString());
+            });
+            return loot;
+        }
         var seed = ForgeRegistries.ITEMS.getValue(new ResourceLocation(cultivar.seedItem()));
         if (seed == null) return loot;
         loot.removeIf(stack -> stack.is(seed));
         boolean mature = isMature(state, cultivar.maturityRule());
-        boolean inOrigin = cultivar.originDimensions().contains(context.getLevel().dimension().location().toString());
+        boolean inOrigin = cultivar.originDimensions().contains(dimension.toString());
         int count = !mature ? 1 : inOrigin ? 2 + context.getRandom().nextInt(3) : 1 + (context.getRandom().nextFloat() < 0.01F ? 1 : 0);
         loot.add(new ItemStack(seed, count));
         return loot;
