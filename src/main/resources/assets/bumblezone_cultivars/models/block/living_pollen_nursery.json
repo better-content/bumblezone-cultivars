@@ -1,1 +1,1 @@
-{"parent":"minecraft:block/cross","textures":{"cross":"the_bumblezone:block/pile_of_pollen"},"render_type":"cutout"}
+{"parent":"minecraft:block/cross","textures":{"cross":"the_bumblezone:block/pile_of_pollen/pile_of_pollen"},"render_type":"cutout"}
