@@ -44,12 +44,19 @@ public final class CultivarChunkFinalizer {
             if (section == null || section.hasOnlyAir()) continue;
             int baseY = SectionPos.sectionToBlockCoord(chunk.getSectionYFromSectionIndex(sectionIndex));
             for (int localY = 0; localY < 16; localY++) for (int localZ = 0; localZ < 16; localZ++) for (int localX = 0; localX < 16; localX++) {
-                var block = section.getBlockState(localX, localY, localZ).getBlock();
+                var state = section.getBlockState(localX, localY, localZ);
+                var block = state.getBlock();
                 if (block == Blocks.AIR) continue;
                 CultivarDefinition cultivar = CultivarCatalog.byPlant(block);
                 if (cultivar != null && !cultivar.originDimensions().contains(dimension.toString())) {
                     cursor.set(minX + localX, baseY + localY, minZ + localZ);
-                    chunk.setBlockState(cursor, Blocks.AIR.defaultBlockState(), false);
+                    // Aquatic plants occupy a water block. Preserve that fluid when
+                    // removing a foreign natural cultivar, otherwise worldgen leaves
+                    // kelp-shaped columns of air in the ocean.
+                    var fluidState = state.getFluidState();
+                    chunk.setBlockState(cursor, fluidState.isEmpty()
+                        ? Blocks.AIR.defaultBlockState()
+                        : fluidState.createLegacyBlock(), false);
                 }
             }
         }
