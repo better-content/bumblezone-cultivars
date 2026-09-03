@@ -54,7 +54,12 @@ public final class CultivarChunkFinalizer {
                     // removing a foreign natural cultivar, otherwise worldgen leaves
                     // kelp-shaped columns of air in the ocean.
                     var fluidState = state.getFluidState();
-                    chunk.setBlockState(cursor, fluidState.isEmpty()
+                    // This runs from ChunkEvent.Load while the chunk is still being
+                    // promoted. Mutating through LevelChunk would fire block-place and
+                    // fluid-interaction callbacks that synchronously request this chunk
+                    // again. Update the section storage directly for this worldgen-only
+                    // cleanup; no neighbor/update callbacks are needed here.
+                    section.setBlockState(localX, localY, localZ, fluidState.isEmpty()
                         ? Blocks.AIR.defaultBlockState()
                         : fluidState.createLegacyBlock(), false);
                 }
