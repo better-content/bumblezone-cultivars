@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.resources.ResourceLocation;
 
@@ -18,6 +19,11 @@ import net.minecraft.resources.ResourceLocation;
 public final class CultivarClient {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         BlockEntityRenderers.register(BumblezoneCultivars.NURSERY_BE.get(), NurseryRenderer::new);
+    }
+
+    public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
+        BumblezoneCultivars.DEDICATED_SEEDS.forEach((id, seed) ->
+            event.register((stack, tintIndex) -> tintIndex == 0 ? SeedVisuals.color(id) : 0xFFFFFF, seed.get()));
     }
     private static final class NurseryRenderer implements BlockEntityRenderer<LivingPollenNurseryBlockEntity> {
         private NurseryRenderer(BlockEntityRendererProvider.Context context) {}

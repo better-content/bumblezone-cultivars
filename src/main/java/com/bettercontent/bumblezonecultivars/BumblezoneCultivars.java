@@ -72,7 +72,10 @@ public final class BumblezoneCultivars {
     public BumblezoneCultivars() {
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         ITEMS.register(bus); BLOCKS.register(bus); BLOCK_ENTITIES.register(bus); LOOT_MODIFIERS.register(bus);
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> bus.addListener(CultivarClient::registerRenderers));
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
+            bus.addListener(CultivarClient::registerRenderers);
+            bus.addListener(CultivarClient::registerItemColors);
+        });
         MinecraftForge.EVENT_BUS.register(CultivarChunkFinalizer.class);
         MinecraftForge.EVENT_BUS.register(EdiblePlantingBlocker.class);
         MinecraftForge.EVENT_BUS.register(SeedTradeBlocker.class);
