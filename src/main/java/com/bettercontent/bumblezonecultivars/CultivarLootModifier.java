@@ -38,9 +38,19 @@ public final class CultivarLootModifier extends LootModifier {
         loot.removeIf(stack -> stack.is(seed));
         boolean mature = isMature(state, cultivar.maturityRule());
         boolean inOrigin = cultivar.originDimensions().contains(dimension.toString());
-        int count = !mature ? 1 : inOrigin ? 2 + context.getRandom().nextInt(3) : 1 + (context.getRandom().nextFloat() < 0.01F ? 1 : 0);
+        int count = !mature
+                ? seedCount(false, inOrigin, 0, 1.0F)
+                : inOrigin
+                        ? seedCount(true, true, context.getRandom().nextInt(3), 1.0F)
+                        : seedCount(true, false, 0, context.getRandom().nextFloat());
         loot.add(new ItemStack(seed, count));
         return loot;
+    }
+
+    static int seedCount(boolean mature, boolean inOrigin, int originBonus, float offOriginRoll) {
+        if (!mature) return 1;
+        if (inOrigin) return 2 + originBonus;
+        return offOriginRoll < 0.10F ? 2 : 1;
     }
 
     static boolean isMature(BlockState state, String rule) {
