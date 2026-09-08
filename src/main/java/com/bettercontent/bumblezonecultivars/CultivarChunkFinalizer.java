@@ -39,7 +39,12 @@ public final class CultivarChunkFinalizer {
             if (!POLLEN.equals(below) || !chunk.getBlockState(hostPos).isAir()) continue;
             CultivarDefinition chosen = choices.get(random.nextInt(choices.size()));
             chunk.setBlockState(hostPos, BumblezoneCultivars.LIVING_POLLEN_NURSERY.get().defaultBlockState(), false);
-            if (chunk.getBlockEntity(hostPos) instanceof LivingPollenNurseryBlockEntity nursery) nursery.setSeedId(chosen.seedItem());
+            if (chunk.getBlockEntity(hostPos) instanceof LivingPollenNurseryBlockEntity nursery) {
+                // BlockEntity#setChanged asks the level for this chunk again. During ChunkEvent.Load
+                // that re-enters ServerChunkCache's incomplete future and can stall the server thread.
+                nursery.initializeSeedId(chosen.seedItem());
+                chunk.setUnsaved(true);
+            }
             placed++;
         }
     }
