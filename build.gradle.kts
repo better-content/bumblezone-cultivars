@@ -1,4 +1,4 @@
-plugins { java; id("net.minecraftforge.gradle") version "[6.0.24,6.2)" }
+plugins { java; id("net.minecraftforge.gradle") version "6.0.54" }
 group = "com.bettercontent"
 version = property("mod_version") as String
 base { archivesName.set(property("artifact_name") as String) }
