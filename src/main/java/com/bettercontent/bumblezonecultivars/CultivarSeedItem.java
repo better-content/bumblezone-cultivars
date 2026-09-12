@@ -29,7 +29,8 @@ public final class CultivarSeedItem extends Item {
         }
         if (!context.getLevel().getBlockState(pos).canBeReplaced() || !state.canSurvive(context.getLevel(), pos)) return InteractionResult.FAIL;
         if (!context.getLevel().isClientSide()) {
-            context.getLevel().setBlock(pos, state, 3);
+            if(!context.getLevel().setBlock(pos, state, 3))return InteractionResult.FAIL;
+            if(context.getPlayer() instanceof net.minecraft.server.level.ServerPlayer player)CultivarPlantings.planted(player,pos,state,context.getItemInHand());
             if (context.getPlayer() == null || !context.getPlayer().getAbilities().instabuild) context.getItemInHand().shrink(1);
         }
         return InteractionResult.sidedSuccess(context.getLevel().isClientSide());

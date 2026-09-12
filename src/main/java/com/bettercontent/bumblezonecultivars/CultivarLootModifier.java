@@ -44,7 +44,7 @@ public final class CultivarLootModifier extends LootModifier {
                 : inOrigin
                         ? seedCount(true, true, persistentHarvest, context.getRandom().nextInt(3), 1.0F)
                         : seedCount(true, false, persistentHarvest, 0, context.getRandom().nextFloat());
-        if (count > 0) loot.add(new ItemStack(seed, count));
+        if (count > 0) {var stack=new ItemStack(seed,count);CultivarPlantings.source(stack,dimension.toString());loot.add(stack);}
         return loot;
     }
 

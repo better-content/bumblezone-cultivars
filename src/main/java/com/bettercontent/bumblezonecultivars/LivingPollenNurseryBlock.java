@@ -22,7 +22,8 @@ public final class LivingPollenNurseryBlock extends BaseEntityBlock {
         BlockEntity raw = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         String seed = raw instanceof LivingPollenNurseryBlockEntity nursery ? nursery.seedId() : "minecraft:wheat_seeds";
         var item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(seed));
-        return item == null ? List.of() : List.of(new ItemStack(item, 4));
+        if(item==null)return List.of();
+        var stack=new ItemStack(item,4);CultivarPlantings.source(stack,builder.getLevel().dimension().location().toString());return List.of(stack);
     }
     @Override public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) { return true; }
 }
